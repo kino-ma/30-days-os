@@ -34,8 +34,8 @@
 ; メッセージ
 
 		DB		0x0a, 0x0a
-		DB		"hello, world"
-		DB		0x0a
+		DB		"hello, NASM!"
+		DB		0x0a, 0x0d
 		DB		0
 
 		TIMES	0x1fe-($-$$) DB 0

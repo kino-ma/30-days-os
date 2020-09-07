@@ -8,3 +8,8 @@ run: $(IMG)
 
 $(IMG): $(SRC)
 	nasm $(SRC) -o $(IMG)
+
+clean:
+	rm -rf $(IMG)
+
+.PHONY: run clean
