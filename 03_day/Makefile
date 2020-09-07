@@ -1,15 +1,15 @@
-SRC_IPL := ipl.s
+SRC_IPL := ipl10.s
 SRC_SYS := haribote.s
 
-IPL := ipl.bin
+IPL := ipl10.bin
 SYS := haribote.sys
-LST_IPL := ipl.lst
+LST_IPL := ipl10.lst
 LST_SYS := haribote.lst
 
-OBJS := $(IPL) $(SYS)
-LSTS := $(LST_IPL) $(LST_SYS)
-
 IMG := haribote.img
+
+OBJS := $(IPL) $(SYS) $(IMG)
+LSTS := $(LST_IPL) $(LST_SYS)
 
 
 default: run
