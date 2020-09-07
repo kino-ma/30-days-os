@@ -1,4 +1,4 @@
-; hello-os
+; haribote-ipl
 
 	ORG		0x7c00
 
@@ -8,7 +8,7 @@
 
 	JMP 	entry
 	DB 		0x90
-	DB		"HELLOIPL"
+	DB		"HARIBOTE"
 	DW		512
 	DB		1
 	DW		1
@@ -23,7 +23,7 @@
 	DD		2880
 	DB		0,0,0x29
 	DD		0xffffffff
-	DB		"HELLO-OS   "
+	DB		"HARIBOTEOS "
 	DB		"FAT12   "
 	TIMES	18 DB 0
 
