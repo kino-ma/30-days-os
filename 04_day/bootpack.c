@@ -1,29 +1,68 @@
+#define BLACK			0
+#define LIGHT_RED		1
+#define LIGHT_GREEN 	2
+#define LIGHT_YELLOW	3
+#define LIGHT_BLUE		4
+#define LIGHT_PURPLE	5
+#define LIGHT_MIZU		6
+#define WHITE			7
+#define LIGTH_GRAY		8
+#define DARK_RED		9
+#define DARK_GREEN		10
+#define DARK_YELLOW		11
+#define DARK_BLUE		12
+#define DARK_PURPLE		13
+#define DARK_MIZU		14
+#define DARK_GRAY		15
+
+#define VRAM_ADDR 0xa0000
+#define DISPLAY_W 320
+#define DISPLAY_H 200
+
 void io_hlt(void);
 void io_cli(void);
 void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 
+void draw_point(int x, int y, unsigned char color);
+void boxfill8(int x, int y, int w, int h, unsigned char color);
+
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 
 void HariMain(void)
 {
-	int i;
-	char *p;
-
 	init_palette();
 
-	p = (char *)0xa0000;
-	for (i = 0; i <= 0xffff; i++) {
-		p[i] = i & 0x0f;
-	}
+	boxfill8(50, 25, 100, 100, LIGHT_RED);
+	boxfill8(DISPLAY_W / 2 - 50, DISPLAY_H / 2 - 50, 100, 100, LIGHT_GREEN);
+	boxfill8(DISPLAY_W - 150, DISPLAY_H - 125, 100, 100, LIGHT_BLUE);
 
-	for (;;) {
+	while (1) {
 		io_hlt();
 	}
 }
 
+void boxfill8(int x, int y, int w, int h, unsigned char color)
+{
+	char *vram = (char *)VRAM_ADDR;
+	int cur_x, cur_y;
+
+	for (cur_x = x; cur_x < x + w; cur_x += 1) {
+		for (cur_y = y; cur_y < y + h; cur_y += 1) {
+			draw_point(cur_x, cur_y, color);
+		}
+	}
+
+	return;
+}
+
+void draw_point(int x, int y, unsigned char color) 
+{
+	((char *)VRAM_ADDR)[x + y * DISPLAY_W] = color;
+	return;
+}
 
 void init_palette(void)
 {
