@@ -92,7 +92,7 @@ pipelineflush:
 	JZ 		skip
 	MOV 	ESI, [EBX + 20]
 	ADD 	ESI, EBX
-	MOV 	EDX, [EBX + 12]
+	MOV 	EDI, [EBX + 12]
 	CALL 	memcpy
 
 skip:
