@@ -70,11 +70,29 @@ pipelineflush:
 
 ; ディスクデータも本来の位置に転送
 ;  まずブートセクタ
+	MOV 	ESI, 0x7c00
+	MOV 	EDI, DSKCAC
+	MOV 	ECX, 512 / 4
+	CALL	memcpy
+
+; 残り全部
 	MOV 	ESI, DSKCAC0 + 512	; 転送元
 	MOV 	EDI, DSKCAC  + 512	; 転送元
 	MOV 	ECX, 0
 	MOV 	CL, BYTE [CYLS]
 	IMUL 	ECX, 512 * 18 * 2 / 4	; IPLの分だけ差し引く
+	SUB 	ECX, 512 / 4
+	CALL 	memcpy
+
+; bootkackの起動
+	MOV 	EBX, BOTPAK
+	MOV 	ECX, [EBX + 16]
+	ADD 	ECX, 3				; ECX += 3
+	SHR 	ECX, 2				; ECX /= 4
+	JZ 		skip
+	MOV 	ESI, [EBX + 20]
+	ADD 	ESI, EBX
+	MOV 	EDX, [EBX + 12]
 	CALL 	memcpy
 
 skip:
@@ -85,6 +103,7 @@ waitkbdout:
 	IN		AL, 0x64
 	AND 	AL, 0x02
 	JNZ 	waitkbdout
+	RET
 
 memcpy:
 	MOV 	EAX, [ESI]
