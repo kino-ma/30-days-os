@@ -3,7 +3,7 @@
 [BITS 32]
 
 
-	GLOBAL 	io_hlt, write_mem8
+	GLOBAL 	io_hlt
 
 [SECTION .text]
 
@@ -11,11 +11,4 @@
 ; void io_hlt();
 io_hlt:
 	HLT
-	RET
-
-; void write_mem8(int addr, int data);
-write_mem8:
-	MOV 	ECX, [ESP + 4] 		; ESP + (sizeof int) * 1
-	MOV 	AL, [ESP + 8] 		; ESP + (sizeof int) * 2
-	MOV 	[ECX], AL
 	RET
