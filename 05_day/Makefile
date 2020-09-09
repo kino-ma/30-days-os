@@ -1,6 +1,7 @@
 GCC := i386-elf-gcc
 LINKER := hrb.ld
 FONT_CONVERTER := convHankakuTxt.c
+CONVERTER := converter
 
 SRC_IPL := ipl10.s
 SRC_ASM_HEAD := asmhead.s
@@ -23,7 +24,7 @@ LST_NASMFUNC := nasmfunc.lst
 
 IMG := haribote.img
 
-OBJS := $(IPL) $(SYS) $(BOOT_HRB) $(HEAD_BIN) $(NASMFUNC_O)
+OBJS := $(IPL) $(SYS) $(BOOT_HRB) $(HEAD_BIN) $(NASMFUNC_O) $(CONVERTER)
 LSTS := $(LST_IPL) $(LST_HEAD) $(LST_NASMFUNC)
 DATA := $(FONT_DATA)
 
@@ -61,9 +62,11 @@ $(IPL): $(SRC_IPL)
 	nasm $(SRC_IPL) -o $(IPL) -l $(LST_IPL)
 
 
-$(FONT_DATA): $(FONT_TXT) $(FONT_CONVERTER)
-	gcc $(FONT_CONVERTER) -o converter
-	./converter
+$(CONVERTER): $(FONT_CONVERTER)
+	gcc $(FONT_CONVERTER) -o $(CONVERTER)
+
+$(FONT_DATA): $(FONT_TXT) $(CONVERTER)
+	./$(CONVERTER)
 
 
 
