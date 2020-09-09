@@ -25,91 +25,99 @@ void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 
-void draw_point(int x, int y, unsigned char color);
-void draw_line_vrt(int x, int y, int y2, unsigned char color);
-void draw_line_hrz(int x, int y, int x2, unsigned char color);
-void boxfill8(int x, int y, int w, int h, unsigned char color);
+void init_screen(unsigned char *vram);
+
+void draw_point(unsigned char *vram, int x, int y, unsigned char color);
+void draw_line_vrt(unsigned char *vram, int x, int y, int y2, unsigned char color);
+void draw_line_hrz(unsigned char *vram, int x, int y, int x2, unsigned char color);
+void boxfill8(unsigned char *vram, int x, int y, int w, int h, unsigned char color);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 
 void HariMain(void)
 {
+	unsigned char *vram = (char *)VRAM_ADDR;
 	init_palette();
 
-	// debug
-	boxfill8(0, 0, DISPLAY_W - 1, DISPLAY_H - 1, LIGHT_RED);
-
-	boxfill8(     0,              0, DISPLAY_W - 1, DISPLAY_H - 29, DARK_MIZU);
-	draw_line_hrz(0, DISPLAY_H - 28, DISPLAY_W - 1,                 LIGHT_GRAY);
-	draw_line_hrz(0, DISPLAY_H - 27, DISPLAY_W - 1,                 WHITE);
-	boxfill8(     0, DISPLAY_H - 26, DISPLAY_W - 1,  DISPLAY_H - 1, LIGHT_GRAY);
-
-	// 左下の箱
-	draw_line_hrz(3,  DISPLAY_H - 24,            59, WHITE);
-	draw_line_hrz(3,  DISPLAY_H -  4,            59, DARK_GRAY);
-	draw_line_vrt(2,  DISPLAY_H - 24, DISPLAY_H - 4, WHITE);
-	draw_line_vrt(59, DISPLAY_H - 23, DISPLAY_H - 5, DARK_GRAY);
-
-	//影
-	draw_line_hrz(2,  DISPLAY_H - 3,  59,            BLACK);
-	draw_line_vrt(60, DISPLAY_H - 24, DISPLAY_H - 3, BLACK);
-
-	// 右下の箱
-	draw_line_hrz(DISPLAY_W - 47, DISPLAY_H - 24, DISPLAY_W - 4, DARK_GRAY);
-	draw_line_hrz(DISPLAY_W - 47, DISPLAY_H - 3,  DISPLAY_W - 4, WHITE);
-	draw_line_vrt(DISPLAY_W - 47, DISPLAY_H - 23, DISPLAY_H - 4, DARK_GRAY);
-	draw_line_vrt(DISPLAY_W - 3,  DISPLAY_H - 24, DISPLAY_H - 3, WHITE);
+	init_screen(vram);
 
 	while (1) {
 		io_hlt();
 	}
 }
 
-void boxfill8(int x, int y, int x2, int y2, unsigned char color)
+void init_screen(unsigned char *vram) {
+
+	// debug
+	boxfill8(vram, 0, 0, DISPLAY_W - 1, DISPLAY_H - 1, LIGHT_RED);
+
+	boxfill8(vram,      0,              0, DISPLAY_W - 1, DISPLAY_H - 29, DARK_MIZU);
+	draw_line_hrz(vram, 0, DISPLAY_H - 28, DISPLAY_W - 1,                 LIGHT_GRAY);
+	draw_line_hrz(vram, 0, DISPLAY_H - 27, DISPLAY_W - 1,                 WHITE);
+	boxfill8(vram,      0, DISPLAY_H - 26, DISPLAY_W - 1,  DISPLAY_H - 1, LIGHT_GRAY);
+
+	// 左下の箱
+	draw_line_hrz(vram, 3,  DISPLAY_H - 24,            59, WHITE);
+	draw_line_hrz(vram, 3,  DISPLAY_H -  4,            59, DARK_GRAY);
+	draw_line_vrt(vram, 2,  DISPLAY_H - 24, DISPLAY_H - 4, WHITE);
+	draw_line_vrt(vram, 59, DISPLAY_H - 23, DISPLAY_H - 5, DARK_GRAY);
+
+	//影
+	draw_line_hrz(vram, 2,  DISPLAY_H - 3,  59,            BLACK);
+	draw_line_vrt(vram, 60, DISPLAY_H - 24, DISPLAY_H - 3, BLACK);
+
+	// 右下の箱
+	draw_line_hrz(vram, DISPLAY_W - 47, DISPLAY_H - 24, DISPLAY_W - 4, DARK_GRAY);
+	draw_line_hrz(vram, DISPLAY_W - 47, DISPLAY_H - 3,  DISPLAY_W - 4, WHITE);
+	draw_line_vrt(vram, DISPLAY_W - 47, DISPLAY_H - 23, DISPLAY_H - 4, DARK_GRAY);
+	draw_line_vrt(vram, DISPLAY_W - 3,  DISPLAY_H - 24, DISPLAY_H - 3, WHITE);
+
+}
+
+void boxfill8(unsigned char *vram, int x, int y, int x2, int y2, unsigned char color)
 {
-	char *vram = (char *)VRAM_ADDR;
 	int cur_x, cur_y;
 
 	for (cur_x = x; cur_x < x2; cur_x += 1) {
 		for (cur_y = y; cur_y < y2; cur_y += 1) {
-			draw_point(cur_x, cur_y, color);
+			draw_point(vram, cur_x, cur_y, color);
 		}
 	}
 
 	return;
 }
 
-void draw_box(int x, int y, int x2, int y2, unsigned char color)
+void draw_box(unsigned char *vram, int x, int y, int x2, int y2, unsigned char color)
 {
-	draw_line_hrz(x,  y,  x2, color);
-	draw_line_hrz(x,  y2, x2, color);
-	draw_line_vrt(x,  y,  y2, color);
-	draw_line_vrt(x2, y,  y2, color);
+	draw_line_hrz(vram, x,  y,  x2, color);
+	draw_line_hrz(vram, x,  y2, x2, color);
+	draw_line_vrt(vram, x,  y,  y2, color);
+	draw_line_vrt(vram, x2, y,  y2, color);
 }
 
-void draw_line_hrz(int x, int y, int x2, unsigned char color)
+void draw_line_hrz(unsigned char *vram, int x, int y, int x2, unsigned char color)
 {
 	int cur_x;
 	for (cur_x = x; cur_x <= x2; cur_x += 1) {
-		draw_point(cur_x, y, color);
+		draw_point(vram, cur_x, y, color);
 	}
 	return;
 }
 
-void draw_line_vrt(int x, int y, int y2, unsigned char color)
+void draw_line_vrt(unsigned char *vram, int x, int y, int y2, unsigned char color)
 {
 	int cur_y;
 	for (cur_y = y; cur_y <= y2; cur_y += 1) {
-		draw_point(x, cur_y, color);
+		draw_point(vram, x, cur_y, color);
 	}
 	return;
 
 }
 
-void draw_point(int x, int y, unsigned char color) 
+void draw_point(unsigned char *vram, int x, int y, unsigned char color) 
 {
-	((char *)VRAM_ADDR)[x + y * DISPLAY_W] = color;
+	vram[x + y * DISPLAY_W] = color;
 	return;
 }
 
