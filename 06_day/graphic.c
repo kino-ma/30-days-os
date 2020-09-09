@@ -1,26 +1,4 @@
-
-#define BLACK        0
-#define LIGHT_RED    1
-#define LIGHT_GREEN  2
-#define LIGHT_YELLOW 3
-#define LIGHT_BLUE   4
-#define LIGHT_PURPLE 5
-#define LIGHT_MIZU   6
-#define WHITE        7
-#define LIGHT_GRAY   8
-#define DARK_RED     9
-#define DARK_GREEN   10
-#define DARK_YELLOW  11
-#define DARK_BLUE    12
-#define DARK_PURPLE  13
-#define DARK_MIZU    14
-#define DARK_GRAY    15
-
-void draw_point(char *vram, int display_w, int x, int y, unsigned char color);
-void draw_byte(char *vram, int display_w, int x, int y, char font, unsigned char color);
-void draw_line_vrt(char *vram, int display_w, int x, int y, int y2, unsigned char color);
-void draw_line_hrz(char *vram, int display_w, int x, int y, int x2, unsigned char color);
-void boxfill8(char *vram, int display_w, int x, int y, int w, int h, unsigned char color);
+#include "bootpack.h"
 
 
 void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color) {
