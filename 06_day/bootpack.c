@@ -6,6 +6,7 @@ void HariMain(void) {
     char txt[30], mcursor[256];
     int mx, my;
 
+    init_pic();
     init_gdtidt();
     init_palette();
 

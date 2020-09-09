@@ -5,7 +5,7 @@ CONVERTER := converter
 
 SRC_IPL := ipl10.s
 SRC_ASM_HEAD := asmhead.s
-SRC_BOOTPACK := bootpack.h bootpack.c graphic.c dsctbl.c
+SRC_BOOTPACK := bootpack.h bootpack.c graphic.c dsctbl.c int.c
 SRC_NASMFUNC := nasmfunc.s
 SRC_MYSPRINTF := mysprintf.c
 
