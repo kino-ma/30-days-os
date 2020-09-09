@@ -45,6 +45,7 @@ void HariMain(void)
 {
 	struct BOOTINFO *binfo;
 	extern char hankaku[4096];
+	char txt[30];
 
 	init_palette();
 
@@ -56,7 +57,11 @@ void HariMain(void)
 	draw_string(binfo->vram, binfo->scrnx, 31, 31, "Hello World!", hankaku, BLACK);
 	draw_string(binfo->vram, binfo->scrnx, 30, 30, "Hello World!", hankaku, WHITE);
 
-	while (1) {
+	sprintf(txt, "disp_W = %d", binfo->scrnx);
+	draw_string(binfo->vram, binfo->scrnx, 30, 60, txt, hankaku, LIGHT_GRAY);
+
+	while (1)
+	{
 		io_hlt();
 	}
 }
