@@ -6,5 +6,6 @@
 *.o
 
 hankaku.c
+converter
 
 target

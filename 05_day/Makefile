@@ -6,6 +6,8 @@ SRC_IPL := ipl10.s
 SRC_ASM_HEAD := asmhead.s
 SRC_BOOTPACK := bootpack.c
 SRC_NASMFUNC := nasmfunc.s
+SRC_MYSPRINTF := mysprintf.c
+
 FONT_TXT := hankaku.txt
 FONT_DATA := hankaku.c
 
@@ -41,14 +43,15 @@ $(SYS): $(BOOT_HRB) $(HEAD_BIN)
 $(HEAD_BIN):
 	nasm $(SRC_ASM_HEAD) -o $(HEAD_BIN) -l $(LST_HEAD)
 
-$(BOOT_HRB): $(SRC_BOOTPACK) $(LINKER) $(NASMFUNC_O) $(FONT_DATA)
-	$(GCC) -march=i486 -m32 -nostdlib \
+$(BOOT_HRB): $(SRC_BOOTPACK) $(LINKER) $(NASMFUNC_O) $(FONT_DATA) $(SRC_MYSPRINTF)
+	$(GCC) -march=i486 -m32 -nostdlib -fno-builtin \
 		-T $(LINKER) \
 		-o $(BOOT_HRB) \
 		-g \
 		$(SRC_BOOTPACK) \
 		$(NASMFUNC_O) \
-		$(FONT_DATA)
+		$(FONT_DATA) \
+		$(SRC_MYSPRINTF)
 
 $(NASMFUNC_O): $(SRC_NASMFUNC)
 	nasm -g -f elf $(SRC_NASMFUNC) -o $(NASMFUNC_O) -l $(LST_NASMFUNC)
