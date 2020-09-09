@@ -21,12 +21,15 @@ void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 
-void init_screen(unsigned char *vram, int display_w, int display_h);
+void init_screen(char *vram, int display_w, int display_h);
 
-void draw_point(unsigned char *vram, int display_w, int x, int y, unsigned char color);
-void draw_line_vrt(unsigned char *vram, int display_w, int x, int y, int y2, unsigned char color);
-void draw_line_hrz(unsigned char *vram, int display_w, int x, int y, int x2, unsigned char color);
-void boxfill8(unsigned char *vram, int display_w, int x, int y, int w, int h, unsigned char color);
+void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color);
+
+void draw_point(char *vram, int display_w, int x, int y, unsigned char color);
+void draw_byte(char *vram, int display_w, int x, int y, char font, unsigned char color);
+void draw_line_vrt(char *vram, int display_w, int x, int y, int y2, unsigned char color);
+void draw_line_hrz(char *vram, int display_w, int x, int y, int x2, unsigned char color);
+void boxfill8(char *vram, int display_w, int x, int y, int w, int h, unsigned char color);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
@@ -39,7 +42,6 @@ struct BOOTINFO {
 
 void HariMain(void)
 {
-	char *vram;
 	struct BOOTINFO *binfo;
 
 	init_palette();
@@ -48,15 +50,41 @@ void HariMain(void)
 
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
+	// A
+	char font_A[16] = {
+		0b00000000,
+		0b00011000,
+		0b00011000,
+		0b00011000,
+		0b00011000,
+		0b00100100,
+		0b00100100,
+		0b00100100,
+		0b00100100,
+		0b01111110,
+		0b01000010,
+		0b01000010,
+		0b01000010,
+		0b11100111,
+		0b00000000,
+		0b00000000
+	};
+
+	putfont8(binfo->vram, binfo->scrnx, 10, 10, font_A, BLACK);
+
 	while (1) {
 		io_hlt();
 	}
 }
 
-void init_screen(unsigned char *vram, int display_w, int display_h) {
+void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color) {
+	int i;
+	for (i = 0; i < 16; i += 1) {
+		draw_byte(vram, display_w, x, y + i, font[i], color);
+	}
+}
 
-	// debug
-	boxfill8(vram, display_w, 0, 0, display_w - 1, display_h - 1, LIGHT_RED);
+void init_screen(char *vram, int display_w, int display_h) {
 
 	boxfill8(vram,      display_w, 0,              0, display_w - 1, display_h - 29, DARK_MIZU);
 	draw_line_hrz(vram, display_w, 0, display_h - 28, display_w - 1,                 LIGHT_GRAY);
@@ -81,7 +109,7 @@ void init_screen(unsigned char *vram, int display_w, int display_h) {
 
 }
 
-void boxfill8(unsigned char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
+void boxfill8(char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
 {
 	int cur_x, cur_y;
 
@@ -94,7 +122,7 @@ void boxfill8(unsigned char *vram, int display_w, int x, int y, int x2, int y2, 
 	return;
 }
 
-void draw_box(unsigned char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
+void draw_box(char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
 {
 	draw_line_hrz(vram, display_w, x,  y,  x2, color);
 	draw_line_hrz(vram, display_w, x,  y2, x2, color);
@@ -102,7 +130,7 @@ void draw_box(unsigned char *vram, int display_w, int x, int y, int x2, int y2, 
 	draw_line_vrt(vram, display_w, x2, y,  y2, color);
 }
 
-void draw_line_hrz(unsigned char *vram, int display_w, int x, int y, int x2, unsigned char color)
+void draw_line_hrz(char *vram, int display_w, int x, int y, int x2, unsigned char color)
 {
 	int cur_x;
 	for (cur_x = x; cur_x <= x2; cur_x += 1) {
@@ -111,7 +139,7 @@ void draw_line_hrz(unsigned char *vram, int display_w, int x, int y, int x2, uns
 	return;
 }
 
-void draw_line_vrt(unsigned char *vram, int display_w, int x, int y, int y2, unsigned char color)
+void draw_line_vrt(char *vram, int display_w, int x, int y, int y2, unsigned char color)
 {
 	int cur_y;
 	for (cur_y = y; cur_y <= y2; cur_y += 1) {
@@ -121,7 +149,16 @@ void draw_line_vrt(unsigned char *vram, int display_w, int x, int y, int y2, uns
 
 }
 
-void draw_point(unsigned char *vram, int display_w, int x, int y, unsigned char color) 
+void draw_byte(char *vram, int display_w, int x, int y, char data, unsigned char color) {
+	int i;
+	for (i = 0; i < 8; i += 1) {
+		if ((1 << i) & data) {
+			draw_point(vram, display_w, x + i, y, color);
+		}
+	}
+}
+
+void draw_point(char *vram, int display_w, int x, int y, unsigned char color) 
 {
 	vram[x + y * display_w] = color;
 	return;
