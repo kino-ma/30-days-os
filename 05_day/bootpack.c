@@ -23,6 +23,7 @@ void io_store_eflags(int eflags);
 
 void init_screen(char *vram, int display_w, int display_h);
 
+void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color);
 void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color);
 
 void draw_point(char *vram, int display_w, int x, int y, unsigned char color);
@@ -51,18 +52,21 @@ void HariMain(void)
 
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-	putfont8(binfo->vram, binfo->scrnx, 10, 10, hankaku + 'A' * 16, BLACK);
-	putfont8(binfo->vram, binfo->scrnx, 20, 10, hankaku + 'B' * 16, BLACK);
-	putfont8(binfo->vram, binfo->scrnx, 30, 10, hankaku + 'C' * 16, BLACK);
-	putfont8(binfo->vram, binfo->scrnx, 40, 10, hankaku + '1' * 16, BLACK);
-	putfont8(binfo->vram, binfo->scrnx, 50, 10, hankaku + '2' * 16, BLACK);
-	putfont8(binfo->vram, binfo->scrnx, 60, 10, hankaku + '3' * 16, BLACK);
+	draw_string(binfo->vram, binfo->scrnx, 10, 10, "My Haribote OS", hankaku, WHITE);
+	draw_string(binfo->vram, binfo->scrnx, 31, 31, "Hello World!", hankaku, BLACK);
+	draw_string(binfo->vram, binfo->scrnx, 30, 30, "Hello World!", hankaku, WHITE);
 
 	while (1) {
 		io_hlt();
 	}
 }
 
+void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color) {
+	int i;
+	for (i = 0; text[i]; i += 1) {
+		putfont8(vram, display_w, x + i * 10, y, font_data + text[i] * 16, color);
+	}
+}
 void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color) {
 	int i;
 	for (i = 0; i < 16; i += 1) {
