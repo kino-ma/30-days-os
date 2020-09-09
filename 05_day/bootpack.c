@@ -15,109 +15,116 @@
 #define DARK_MIZU		14
 #define DARK_GRAY		15
 
-#define VRAM_ADDR 0xa0000
-#define DISPLAY_W 320
-#define DISPLAY_H 200
-
 void io_hlt(void);
 void io_cli(void);
 void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 
-void init_screen(unsigned char *vram);
+void init_screen(unsigned char *vram, int display_w, int display_h);
 
-void draw_point(unsigned char *vram, int x, int y, unsigned char color);
-void draw_line_vrt(unsigned char *vram, int x, int y, int y2, unsigned char color);
-void draw_line_hrz(unsigned char *vram, int x, int y, int x2, unsigned char color);
-void boxfill8(unsigned char *vram, int x, int y, int w, int h, unsigned char color);
+void draw_point(unsigned char *vram, int display_w, int x, int y, unsigned char color);
+void draw_line_vrt(unsigned char *vram, int display_w, int x, int y, int y2, unsigned char color);
+void draw_line_hrz(unsigned char *vram, int display_w, int x, int y, int x2, unsigned char color);
+void boxfill8(unsigned char *vram, int display_w, int x, int y, int w, int h, unsigned char color);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 
 void HariMain(void)
 {
-	unsigned char *vram = (char *)VRAM_ADDR;
+	char *vram;
+	int display_w, display_h;
+	short *binfo_scrnx, *binfo_scrny;
+	int *binfo_vram;
+
 	init_palette();
 
-	init_screen(vram);
+	binfo_scrnx = (short *)0x0ff4;
+	binfo_scrny = (short *)0x0ff6;
+	binfo_vram = (int *)0x0ff8;
+	display_w = *binfo_scrnx;
+	display_h = *binfo_scrny;
+	vram = (char *)*binfo_vram;
+
+	init_screen(vram, display_w, display_h);
 
 	while (1) {
 		io_hlt();
 	}
 }
 
-void init_screen(unsigned char *vram) {
+void init_screen(unsigned char *vram, int display_w, int display_h) {
 
 	// debug
-	boxfill8(vram, 0, 0, DISPLAY_W - 1, DISPLAY_H - 1, LIGHT_RED);
+	boxfill8(vram, display_w, 0, 0, display_w - 1, display_h - 1, LIGHT_RED);
 
-	boxfill8(vram,      0,              0, DISPLAY_W - 1, DISPLAY_H - 29, DARK_MIZU);
-	draw_line_hrz(vram, 0, DISPLAY_H - 28, DISPLAY_W - 1,                 LIGHT_GRAY);
-	draw_line_hrz(vram, 0, DISPLAY_H - 27, DISPLAY_W - 1,                 WHITE);
-	boxfill8(vram,      0, DISPLAY_H - 26, DISPLAY_W - 1,  DISPLAY_H - 1, LIGHT_GRAY);
+	boxfill8(vram,      display_w, 0,              0, display_w - 1, display_h - 29, DARK_MIZU);
+	draw_line_hrz(vram, display_w, 0, display_h - 28, display_w - 1,                 LIGHT_GRAY);
+	draw_line_hrz(vram, display_w, 0, display_h - 27, display_w - 1,                 WHITE);
+	boxfill8(vram,      display_w, 0, display_h - 26, display_w - 1,  display_h - 1, LIGHT_GRAY);
 
 	// 左下の箱
-	draw_line_hrz(vram, 3,  DISPLAY_H - 24,            59, WHITE);
-	draw_line_hrz(vram, 3,  DISPLAY_H -  4,            59, DARK_GRAY);
-	draw_line_vrt(vram, 2,  DISPLAY_H - 24, DISPLAY_H - 4, WHITE);
-	draw_line_vrt(vram, 59, DISPLAY_H - 23, DISPLAY_H - 5, DARK_GRAY);
+	draw_line_hrz(vram, display_w, 3,  display_h - 24,            59, WHITE);
+	draw_line_hrz(vram, display_w, 3,  display_h -  4,            59, DARK_GRAY);
+	draw_line_vrt(vram, display_w, 2,  display_h - 24, display_h - 4, WHITE);
+	draw_line_vrt(vram, display_w, 59, display_h - 23, display_h - 5, DARK_GRAY);
 
 	//影
-	draw_line_hrz(vram, 2,  DISPLAY_H - 3,  59,            BLACK);
-	draw_line_vrt(vram, 60, DISPLAY_H - 24, DISPLAY_H - 3, BLACK);
+	draw_line_hrz(vram, display_w, 2,  display_h - 3,  59,            BLACK);
+	draw_line_vrt(vram, display_w, 60, display_h - 24, display_h - 3, BLACK);
 
 	// 右下の箱
-	draw_line_hrz(vram, DISPLAY_W - 47, DISPLAY_H - 24, DISPLAY_W - 4, DARK_GRAY);
-	draw_line_hrz(vram, DISPLAY_W - 47, DISPLAY_H - 3,  DISPLAY_W - 4, WHITE);
-	draw_line_vrt(vram, DISPLAY_W - 47, DISPLAY_H - 23, DISPLAY_H - 4, DARK_GRAY);
-	draw_line_vrt(vram, DISPLAY_W - 3,  DISPLAY_H - 24, DISPLAY_H - 3, WHITE);
+	draw_line_hrz(vram, display_w, display_w - 47, display_h - 24, display_w - 4, DARK_GRAY);
+	draw_line_hrz(vram, display_w, display_w - 47, display_h - 3,  display_w - 4, WHITE);
+	draw_line_vrt(vram, display_w, display_w - 47, display_h - 23, display_h - 4, DARK_GRAY);
+	draw_line_vrt(vram, display_w, display_w - 3,  display_h - 24, display_h - 3, WHITE);
 
 }
 
-void boxfill8(unsigned char *vram, int x, int y, int x2, int y2, unsigned char color)
+void boxfill8(unsigned char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
 {
 	int cur_x, cur_y;
 
 	for (cur_x = x; cur_x < x2; cur_x += 1) {
 		for (cur_y = y; cur_y < y2; cur_y += 1) {
-			draw_point(vram, cur_x, cur_y, color);
+			draw_point(vram, display_w, cur_x, cur_y, color);
 		}
 	}
 
 	return;
 }
 
-void draw_box(unsigned char *vram, int x, int y, int x2, int y2, unsigned char color)
+void draw_box(unsigned char *vram, int display_w, int x, int y, int x2, int y2, unsigned char color)
 {
-	draw_line_hrz(vram, x,  y,  x2, color);
-	draw_line_hrz(vram, x,  y2, x2, color);
-	draw_line_vrt(vram, x,  y,  y2, color);
-	draw_line_vrt(vram, x2, y,  y2, color);
+	draw_line_hrz(vram, display_w, x,  y,  x2, color);
+	draw_line_hrz(vram, display_w, x,  y2, x2, color);
+	draw_line_vrt(vram, display_w, x,  y,  y2, color);
+	draw_line_vrt(vram, display_w, x2, y,  y2, color);
 }
 
-void draw_line_hrz(unsigned char *vram, int x, int y, int x2, unsigned char color)
+void draw_line_hrz(unsigned char *vram, int display_w, int x, int y, int x2, unsigned char color)
 {
 	int cur_x;
 	for (cur_x = x; cur_x <= x2; cur_x += 1) {
-		draw_point(vram, cur_x, y, color);
+		draw_point(vram, display_w, cur_x, y, color);
 	}
 	return;
 }
 
-void draw_line_vrt(unsigned char *vram, int x, int y, int y2, unsigned char color)
+void draw_line_vrt(unsigned char *vram, int display_w, int x, int y, int y2, unsigned char color)
 {
 	int cur_y;
 	for (cur_y = y; cur_y <= y2; cur_y += 1) {
-		draw_point(vram, x, cur_y, color);
+		draw_point(vram, display_w, x, cur_y, color);
 	}
 	return;
 
 }
 
-void draw_point(unsigned char *vram, int x, int y, unsigned char color) 
+void draw_point(unsigned char *vram, int display_w, int x, int y, unsigned char color) 
 {
-	vram[x + y * DISPLAY_W] = color;
+	vram[x + y * display_w] = color;
 	return;
 }
 
