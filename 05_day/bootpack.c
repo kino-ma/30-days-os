@@ -43,6 +43,7 @@ struct BOOTINFO {
 void HariMain(void)
 {
 	struct BOOTINFO *binfo;
+	extern char hankaku[4096];
 
 	init_palette();
 
@@ -50,27 +51,12 @@ void HariMain(void)
 
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-	// A
-	char font_A[16] = {
-		0b00000000,
-		0b00011000,
-		0b00011000,
-		0b00011000,
-		0b00011000,
-		0b00100100,
-		0b00100100,
-		0b00100100,
-		0b00100100,
-		0b01111110,
-		0b01000010,
-		0b01000010,
-		0b01000010,
-		0b11100111,
-		0b00000000,
-		0b00000000
-	};
-
-	putfont8(binfo->vram, binfo->scrnx, 10, 10, font_A, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 10, 10, hankaku + 'A' * 16, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 20, 10, hankaku + 'B' * 16, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 30, 10, hankaku + 'C' * 16, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 40, 10, hankaku + '1' * 16, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 50, 10, hankaku + '2' * 16, BLACK);
+	putfont8(binfo->vram, binfo->scrnx, 60, 10, hankaku + '3' * 16, BLACK);
 
 	while (1) {
 		io_hlt();
@@ -152,7 +138,7 @@ void draw_line_vrt(char *vram, int display_w, int x, int y, int y2, unsigned cha
 void draw_byte(char *vram, int display_w, int x, int y, char data, unsigned char color) {
 	int i;
 	for (i = 0; i < 8; i += 1) {
-		if ((1 << i) & data) {
+		if ((0x80 >> i) & data) {
 			draw_point(vram, display_w, x + i, y, color);
 		}
 	}

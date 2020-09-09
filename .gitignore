@@ -4,3 +4,7 @@
 *.hrb
 *.sys
 *.o
+
+hankaku.c
+
+target

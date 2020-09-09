@@ -1,10 +1,13 @@
 GCC := i386-elf-gcc
 LINKER := hrb.ld
+FONT_CONVERTER := convHankakuTxt.c
 
 SRC_IPL := ipl10.s
 SRC_ASM_HEAD := asmhead.s
 SRC_BOOTPACK := bootpack.c
 SRC_NASMFUNC := nasmfunc.s
+FONT_TXT := hankaku.txt
+FONT_DATA := hankaku.c
 
 IPL := ipl10.bin
 SYS := haribote.sys
@@ -18,8 +21,9 @@ LST_NASMFUNC := nasmfunc.lst
 
 IMG := haribote.img
 
-OBJS := $(IPL) $(SYS) $(BOOT_HRB) $(HEAD_BIN) $(NASMFUNC_O) $(IMG)
+OBJS := $(IPL) $(SYS) $(BOOT_HRB) $(HEAD_BIN) $(NASMFUNC_O)
 LSTS := $(LST_IPL) $(LST_HEAD) $(LST_NASMFUNC)
+DATA := $(FONT_DATA)
 
 
 
@@ -37,8 +41,14 @@ $(SYS): $(BOOT_HRB) $(HEAD_BIN)
 $(HEAD_BIN):
 	nasm $(SRC_ASM_HEAD) -o $(HEAD_BIN) -l $(LST_HEAD)
 
-$(BOOT_HRB): $(SRC_BOOTPACK) $(LINKER) $(NASMFUNC_O)
-	$(GCC) -march=i486 -m32 -nostdlib -T $(LINKER) -g $(SRC_BOOTPACK) $(NASMFUNC_O) -o $(BOOT_HRB)
+$(BOOT_HRB): $(SRC_BOOTPACK) $(LINKER) $(NASMFUNC_O) $(FONT_DATA)
+	$(GCC) -march=i486 -m32 -nostdlib \
+		-T $(LINKER) \
+		-o $(BOOT_HRB) \
+		-g \
+		$(SRC_BOOTPACK) \
+		$(NASMFUNC_O) \
+		$(FONT_DATA)
 
 $(NASMFUNC_O): $(SRC_NASMFUNC)
 	nasm -g -f elf $(SRC_NASMFUNC) -o $(NASMFUNC_O) -l $(LST_NASMFUNC)
@@ -46,6 +56,11 @@ $(NASMFUNC_O): $(SRC_NASMFUNC)
 
 $(IPL): $(SRC_IPL)
 	nasm $(SRC_IPL) -o $(IPL) -l $(LST_IPL)
+
+
+$(FONT_DATA): $(FONT_TXT) $(FONT_CONVERTER)
+	gcc $(FONT_CONVERTER) -o converter
+	./converter
 
 
 
@@ -57,6 +72,6 @@ run: $(IMG)
 		-drive file=$(IMG),format=raw,if=floppy
 
 clean:
-	rm -rf $(OBJS) $(LSTS) $(IMG)
+	rm -rf $(OBJS) $(LSTS) $(IMG) $(DATA)
 
 .PHONY: default build run clean
