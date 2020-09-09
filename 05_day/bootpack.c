@@ -23,6 +23,7 @@ void io_store_eflags(int eflags);
 
 void init_screen(char *vram, int display_w, int display_h);
 
+void init_mouse_cursor8(char *mouse, char bc);
 void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color);
 void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color);
 
@@ -45,7 +46,8 @@ void HariMain(void)
 {
 	struct BOOTINFO *binfo;
 	extern char hankaku[4096];
-	char txt[30];
+	char txt[30], mcursor[256];
+	int mx, my;
 
 	init_palette();
 
@@ -53,15 +55,17 @@ void HariMain(void)
 
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-	draw_string(binfo->vram, binfo->scrnx, 10, 10, "My Haribote OS", hankaku, WHITE);
-	draw_string(binfo->vram, binfo->scrnx, 31, 31, "Hello World!", hankaku, BLACK);
-	draw_string(binfo->vram, binfo->scrnx, 30, 30, "Hello World!", hankaku, WHITE);
+	draw_string(binfo->vram, binfo->scrnx, 11, 11, "Hello.", hankaku, BLACK);
+	draw_string(binfo->vram, binfo->scrnx, 10, 10, "Hello. mak OS", hankaku, WHITE);
 
 	sprintf(txt, "disp_W = %d", binfo->scrnx);
-	draw_string(binfo->vram, binfo->scrnx, 30, 60, txt, hankaku, LIGHT_GRAY);
+	draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, hankaku, LIGHT_GRAY);
 
-	while (1)
-	{
+	mx = 70, my = 70;
+	init_mouse_cursor8(mcursor, DARK_MIZU);
+	putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
+
+	while (1) {
 		io_hlt();
 	}
 }
@@ -77,6 +81,56 @@ void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char
 	for (i = 0; i < 16; i += 1) {
 		draw_byte(vram, display_w, x, y + i, font[i], color);
 	}
+}
+
+void init_mouse_cursor8(char *mouse, char bc) {
+	static char cursor[16][16] = {
+		"**************..",
+		"*OOOOOOOOOOO*...",
+		"*OOOOOOOOOO*....",
+		"*OOOOOOOOO*.....",
+		"*OOOOOOOO*......",
+		"*OOOOOOO*.......",
+		"*OOOOOOO*.......",
+		"*OOOOOOOO*......",
+		"*OOOO**OOO*.....",
+		"*OOO*..*OOO*....",
+		"*OO*....*OOO*...",
+		"*O*......*OOO*..",
+		"**........*OOO*.",
+		"*..........*OOO*",
+		"............*OO*",
+		".............***"
+	};
+	int x, y;
+
+	for (y = 0; y < 16; y++) {
+		for (x = 0; x < 16; x++) {
+			if (cursor[y][x] == '*') {
+				mouse[y * 16 + x] = BLACK;
+			}
+			if (cursor[y][x] == 'O') {
+				mouse[y * 16 + x] = WHITE;
+			}
+			if (cursor[y][x] == '.') {
+				mouse[y * 16 + x] = bc;
+			}
+		}
+	}
+	return;
+}
+
+void putblock8_8(
+	char *vram, int vxsize,
+	int pxsize, int pysize, int px0, int py0, char *buf, int bxsize)
+{
+	int x, y;
+	for (y = 0; y < pysize; y++) {
+		for (x = 0; x < pxsize; x++) {
+			vram[(py0 + y) * vxsize + (px0 + x)] = buf[y * bxsize + x];
+		}
+	}
+	return;
 }
 
 void init_screen(char *vram, int display_w, int display_h) {
