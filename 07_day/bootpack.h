@@ -27,6 +27,14 @@
 #define ADR_BOOTINFO    0x0ff0
 #define AR_INTGATE32	0x008e
 
+#define PORT_KEYSTA     0x0064
+#define PORT_KEYCMD     0x0064
+#define KEYSTA_SEND_NOTREADY    0x02
+#define KEYCMD_WRITE_MODE       0x60
+#define KBC_MODE        0x47
+#define KEYCMD_SENDTO_MOUSE     0xd4
+#define MOUSCMD_ENABLE          0xf4
+
 
 /* asm */
 void io_hlt(void);
@@ -43,6 +51,11 @@ void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
 
+
+/* bootpack.c */
+void wait_KBC_sendready(void);
+void init_keyboard(void);
+void enable_mouse(void);
 
 /* graphic.c */
 void init_screen(char *vram, int display_w, int display_h);

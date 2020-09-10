@@ -12,6 +12,9 @@ void HariMain(void) {
     init_gdtidt();
     init_pic();
     io_sti();
+
+    init_keyboard();
+    enable_mouse();
     fifo8_init(&keyfifo, keybuf, 32);
 
     init_palette();
@@ -49,4 +52,27 @@ void HariMain(void) {
             draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
         }
     }
+}
+
+
+void wait_KBC_sendready(void) {
+    while (io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY)
+        ;
+    return;
+}
+
+void init_keyboard(void) {
+    wait_KBC_sendready();
+    io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+    wait_KBC_sendready();
+    io_out8(PORT_KEYDAT, KBC_MODE);
+    return;
+}
+
+void enable_mouse(void) {
+    wait_KBC_sendready();
+    io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
+    wait_KBC_sendready();
+    io_out8(PORT_KEYDAT, MOUSCMD_ENABLE);
+    return;
 }
