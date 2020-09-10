@@ -3,6 +3,12 @@
 extern struct FIFO8 keyfifo;
 extern struct FIFO8 mousefifo;
 
+unsigned char key_table[] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0,
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0, 0, ']',
+    'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '_'};
+
 void HariMain(void) {
     struct BOOTINFO *binfo;
     extern char hankaku[4096];
@@ -53,6 +59,8 @@ void HariMain(void) {
 
             boxfill8(binfo->vram, binfo->scrnx, 30, 30, 190, 46, DARK_MIZU);
             draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
+            boxfill8(binfo->vram, binfo->scrnx, 30, 50, 30 + 16, 50 + 16, DARK_MIZU);
+            putfont8(binfo->vram, binfo->scrnx, 30, 50, hankaku + key_table[i] * 16, WHITE);
         } else if (mousefifo.count > 0) {
             if (fifo8_get(&mousefifo, &i) < 0) {
                 continue;
@@ -101,7 +109,6 @@ void HariMain(void) {
         }
     }
 }
-
 
 void wait_KBC_sendready(void) {
     while (io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY)
