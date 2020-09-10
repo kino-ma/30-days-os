@@ -38,14 +38,13 @@ void HariMain(void) {
         } else {
             i = keybuf.data[keybuf.cur];
             keybuf.count -= 1;
-            keybuf.cur += 1;
+            keybuf.cur = (keybuf.cur + 1) & 31;
             io_sti();
 
-            sprintf(txt, "%d", i);
+            sprintf(txt, "code = %x", i);
 
-            init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-            boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
-            draw_string(binfo->vram, binfo->scrnx, 0, 0, txt, WHITE);
+            boxfill8(binfo->vram, binfo->scrnx, 30, 30, 190, 46, DARK_MIZU);
+            draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
         }
     }
 }
