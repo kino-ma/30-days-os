@@ -28,9 +28,9 @@ void inthandler21(int *esp) {
     io_out8(PIC0_OCW2, 0x61);
     data = io_in8(PORT_KEYDAT);
 
-    if (keybuf.flag == 0) {
-        keybuf.data = data;
-        keybuf.flag = 1;
+    if (keybuf.count < 32) {
+        keybuf.data[keybuf.cur + keybuf.count] = data;
+        keybuf.count += 1;
     }
 
     return;

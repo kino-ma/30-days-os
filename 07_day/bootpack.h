@@ -115,5 +115,7 @@ void inthandler2c(int *esp);
 void init_pic(void);
 
 struct KEYBUF {
-    unsigned char data, flag;
+    unsigned char data[32];
+    int cur;
+    int count;
 };

@@ -33,11 +33,12 @@ void HariMain(void) {
 
     while (1) {
         io_cli();
-        if (!keybuf.flag) {
+        if (keybuf.count <= 0) {
             io_stihlt();
         } else {
-            i = keybuf.data;
-            keybuf.flag = 0;
+            i = keybuf.data[keybuf.cur];
+            keybuf.count -= 1;
+            keybuf.cur += 1;
             io_sti();
 
             sprintf(txt, "%d", i);
