@@ -21,18 +21,13 @@ void init_pic(void) {
 }
 
 // キーボードの割り込み
-struct KEYBUF keybuf;
+struct FIFO8 keyfifo;
 
 void inthandler21(int *esp) {
     unsigned char data;
     io_out8(PIC0_OCW2, 0x61);
     data = io_in8(PORT_KEYDAT);
-
-    if (keybuf.count < 32) {
-        keybuf.data[keybuf.cur + keybuf.count] = data;
-        keybuf.count += 1;
-    }
-
+    fifo8_put(&keyfifo, data);
     return;
 }
 

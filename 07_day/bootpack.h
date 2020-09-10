@@ -114,8 +114,15 @@ void inthandler2c(int *esp);
 
 void init_pic(void);
 
-struct KEYBUF {
-    unsigned char data[32];
-    int cur;
-    int count;
+
+/* fifo.c */
+#define FLAGS_OVERRUN   0x0001
+
+struct FIFO8 {
+    unsigned char *buf;
+    int cur, count, size, flags;
 };
+
+void fifo8_init(struct FIFO8 *fifo,  unsigned char *buf, int size);
+int fifo8_put(struct FIFO8 *fifo, unsigned char data);
+int fifo8_get(struct FIFO8 *fifo, unsigned char *data);

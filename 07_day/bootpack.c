@@ -1,16 +1,18 @@
 #include "bootpack.h"
 
-extern struct KEYBUF keybuf;
+extern struct FIFO8 keyfifo;
 
 void HariMain(void) {
     struct BOOTINFO *binfo;
     extern char hankaku[4096];
     char txt[30], mcursor[256];
+    unsigned char keybuf[32];
     int mx, my, i;
 
     init_gdtidt();
     init_pic();
     io_sti();
+    fifo8_init(&keyfifo, keybuf, 32);
 
     init_palette();
 
@@ -33,12 +35,12 @@ void HariMain(void) {
 
     while (1) {
         io_cli();
-        if (keybuf.count <= 0) {
+        if (keyfifo.count <= 0) {
             io_stihlt();
         } else {
-            i = keybuf.data[keybuf.cur];
-            keybuf.count -= 1;
-            keybuf.cur = (keybuf.cur + 1) & 31;
+            if (fifo8_get(&keyfifo, (unsigned char *)&i) < 0) {
+                continue;
+            }
             io_sti();
 
             sprintf(txt, "code = %x", i);
