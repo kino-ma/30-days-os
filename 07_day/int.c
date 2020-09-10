@@ -24,7 +24,7 @@ void init_pic(void) {
 void inthandler21(int *esp) {
     struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
     unsigned char data, s[4];
-    io_out8(PIC0_ICW2, 0x61);
+    io_out8(PIC0_OCW2, 0x61);
     data = io_in8(PORT_KEYDAT);
 
     sprintf(s, "%d", data);
@@ -32,9 +32,8 @@ void inthandler21(int *esp) {
     init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
     boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
     draw_string(binfo->vram, binfo->scrnx, 0, 0, s, WHITE);
-    while (1) {
-        io_hlt();
-    }
+
+    return;
 }
 
 // マウスの割り込み
