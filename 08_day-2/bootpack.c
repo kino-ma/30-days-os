@@ -3,18 +3,26 @@
 extern struct FIFO8 keyfifo;
 extern struct FIFO8 mousefifo;
 
-unsigned char key_table[] = {
-    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
+unsigned char key_table_qwerty[] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', '^', 0, 0,
     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0, 0, ']',
-    'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '_'};
+    'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '_',
+    0, 0, ' '};
+
+unsigned char key_table_dvorak[] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', '^', 0, 0,
+    '\'', ',', '.', 'P', 'Y', 'F', 'G', 'C', 'R', 'L', '@', '[', 0, 0,
+    'A', 'O', 'E', 'U', 'I', 'D', 'H', 'T', 'N', 'S', ':', 0, 0, ']',
+    ';', 'Q', 'J', 'K', 'X', 'B', 'M', 'W', 'V', 'Z', '_',
+    0, 0, ' '};
 
 void HariMain(void) {
     struct BOOTINFO *binfo;
     extern char hankaku[4096];
-    char txt[30], mcursor[256];
+    char txt[30], mcursor[256], input_txt[32] = "_";
     unsigned char keybuf[32], mousebuf[32];
-    int mx, my, i;
+    int mx, my, i, input_count = 0;
 
     struct MOUSE_DEC mdec;
 
@@ -36,12 +44,10 @@ void HariMain(void) {
     draw_string(binfo->vram, binfo->scrnx, 11, 11, "Hello.", BLACK);
     draw_string(binfo->vram, binfo->scrnx, 10, 10, "Hello. mak OS", WHITE);
 
-    sprintf(txt, "disp_W = %d", binfo->scrnx);
-    draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, LIGHT_GRAY);
-
-    mx = 70, my = 70;
+    mx = binfo->scrnx / 2 - 16, my = binfo->scrny / 2 - 16;
     init_mouse_cursor8(mcursor, DARK_MIZU);
     putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
+    draw_string(binfo->vram, binfo->scrnx, 10, 30, input_txt, WHITE);
 
     io_out8(PIC0_IMR, 0xf9); // PIC1とキーボードを許可(11111001)
 	io_out8(PIC1_IMR, 0xef); // マウスを許可(11101111)
@@ -55,12 +61,23 @@ void HariMain(void) {
             }
             io_sti();
 
-            sprintf(txt, "code  = %x", i);
+            if (0x80 & i) {
+                continue;
+            }
 
-            boxfill8(binfo->vram, binfo->scrnx, 30, 30, 190, 46, DARK_MIZU);
-            draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
-            boxfill8(binfo->vram, binfo->scrnx, 30, 50, 30 + 16, 50 + 16, DARK_MIZU);
-            putfont8(binfo->vram, binfo->scrnx, 30, 50, hankaku + key_table[i] * 16, WHITE);
+            if (i == 0x0e) {
+                if (input_count <= 0)
+                    continue;
+                input_txt[input_count] = 0;
+                input_txt[input_count - 1] = '_';
+                input_count -= input_count > 0 ? 1 : 0;
+            } else if (input_count < 32) {
+                input_txt[input_count] = key_table_dvorak[i];
+                input_txt[input_count + 1] = '_';
+                input_count += 1;
+            }
+            boxfill8(binfo->vram, binfo->scrnx, 10, 30, 10 + 16 * 32, 30 + 16, DARK_MIZU);
+            draw_string(binfo->vram, binfo->scrnx, 10, 30, input_txt, WHITE);
         } else if (mousefifo.count > 0) {
             if (fifo8_get(&mousefifo, &i) < 0) {
                 continue;
@@ -79,8 +96,6 @@ void HariMain(void) {
             } else if (mdec.btn & 0x04) {
                 txt[2] = 'C';
             }
-            boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
-            draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
 
             boxfill8(binfo->vram, binfo->scrnx, mx, my, mx + 16, my + 16, DARK_MIZU);
             mx += mdec.x;
@@ -99,9 +114,7 @@ void HariMain(void) {
                 my = binfo->scrny - 16;
             }
 
-            sprintf(txt, "(%d, %d)", mx, my);
             boxfill8(binfo->vram, binfo->scrnx, 30, 70, 190, 86, DARK_MIZU);
-            draw_string(binfo->vram, binfo->scrnx, 30, 70, txt, WHITE);
             putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
         }
         else {
