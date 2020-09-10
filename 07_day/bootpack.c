@@ -1,10 +1,12 @@
 #include "bootpack.h"
 
+extern struct KEYBUF keybuf;
+
 void HariMain(void) {
     struct BOOTINFO *binfo;
     extern char hankaku[4096];
     char txt[30], mcursor[256];
-    int mx, my;
+    int mx, my, i;
 
     init_gdtidt();
     init_pic();
@@ -30,6 +32,19 @@ void HariMain(void) {
 	io_out8(PIC1_IMR, 0xef); // マウスを許可(11101111)
 
     while (1) {
-        io_hlt();
+        io_cli();
+        if (!keybuf.flag) {
+            io_stihlt();
+        } else {
+            i = keybuf.data;
+            keybuf.flag = 0;
+            io_sti();
+
+            sprintf(txt, "%d", i);
+
+            init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+            boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
+            draw_string(binfo->vram, binfo->scrnx, 0, 0, txt, WHITE);
+        }
     }
 }

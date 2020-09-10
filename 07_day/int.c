@@ -21,17 +21,17 @@ void init_pic(void) {
 }
 
 // キーボードの割り込み
+struct KEYBUF keybuf;
+
 void inthandler21(int *esp) {
-    struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
-    unsigned char data, s[4];
+    unsigned char data;
     io_out8(PIC0_OCW2, 0x61);
     data = io_in8(PORT_KEYDAT);
 
-    sprintf(s, "%d", data);
-
-    init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-    boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
-    draw_string(binfo->vram, binfo->scrnx, 0, 0, s, WHITE);
+    if (keybuf.flag == 0) {
+        keybuf.data = data;
+        keybuf.flag = 1;
+    }
 
     return;
 }
