@@ -8,15 +8,16 @@ void HariMain(void) {
     extern char hankaku[4096];
     char txt[30], mcursor[256];
     unsigned char keybuf[32], mousebuf[32];
-    unsigned char mouse_dbuf[3], mouse_phase;
     int mx, my, i;
+
+    struct MOUSE_DEC mdec;
 
     init_gdtidt();
     init_pic();
     io_sti();
 
     init_keyboard();
-    enable_mouse();
+    enable_mouse(&mdec);
     fifo8_init(&keyfifo, keybuf, 32);
     fifo8_init(&mousefifo, mousebuf, 32);
 
@@ -57,25 +58,13 @@ void HariMain(void) {
             }
             io_sti();
 
-            if (mouse_phase == 0) {
-                if (i == 0xfa) {
-                    mouse_phase = 1;
-                }
-            } else if (mouse_phase == 1) {
-                mouse_dbuf[0] = i;
-                mouse_phase = 2;
-            } else if (mouse_phase == 2) {
-                mouse_dbuf[1] = i;
-                mouse_phase = 3;
-            } else if (mouse_phase == 3) {
-                mouse_dbuf[2] = i;
-                mouse_phase = 1;
-
-                sprintf(txt, "mouse = %x,%x,%x", mouse_dbuf[0], mouse_dbuf[1], mouse_dbuf[2] );
-                boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
-                draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
+            if (mouse_decode(&mdec, i) != 1) {
+                continue;
             }
 
+            sprintf(txt, "mouse = %x,%x,%x", mdec.buf[0], mdec.buf[1], mdec.buf[2] );
+            boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
+            draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
         } else {
             io_stihlt();
         }
@@ -97,10 +86,36 @@ void init_keyboard(void) {
     return;
 }
 
-void enable_mouse(void) {
+void enable_mouse(struct MOUSE_DEC *mdec) {
     wait_KBC_sendready();
     io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
     wait_KBC_sendready();
     io_out8(PORT_KEYDAT, MOUSCMD_ENABLE);
+
     return;
+}
+
+int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat) {
+    if (mdec->phase == 0) {
+        if (dat == 0xfa) {
+            mdec->phase = 1;
+        }
+        return 0;
+    }
+    else if (mdec->phase == 1) {
+        mdec->buf[0] = dat;
+        mdec->phase = 2;
+        return 0;
+    }
+    else if (mdec->phase == 2) {
+        mdec->buf[1] = dat;
+        mdec->phase = 3;
+        return 0;
+    }
+    else if (mdec->phase == 3) {
+        mdec->buf[2] = dat;
+        mdec->phase = 1;
+        return 1;
+    }
+    return -1;
 }

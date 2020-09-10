@@ -53,9 +53,15 @@ void asm_inthandler2c(void);
 
 
 /* bootpack.c */
+struct MOUSE_DEC {
+    unsigned char buf[3], phase;
+};
+
 void wait_KBC_sendready(void);
 void init_keyboard(void);
-void enable_mouse(void);
+void enable_mouse(struct MOUSE_DEC *mdec);
+int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
+
 
 /* graphic.c */
 void init_screen(char *vram, int display_w, int display_h);
