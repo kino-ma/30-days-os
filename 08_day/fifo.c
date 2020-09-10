@@ -21,7 +21,7 @@ int fifo8_put(struct FIFO8 *fifo, unsigned char data) {
     return 0;
 }
 
-int fifo8_get(struct FIFO8 *fifo, unsigned char *data) {
+int fifo8_get(struct FIFO8 *fifo, int *data) {
     if (fifo->count <= 0) {
         return -1;
     }

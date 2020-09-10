@@ -43,7 +43,7 @@ void HariMain(void) {
     while (1) {
         io_cli();
         if (keyfifo.count > 0) {
-            if (fifo8_get(&keyfifo, (unsigned char *)&i) < 0) {
+            if (fifo8_get(&keyfifo, &i) < 0) {
                 continue;
             }
             io_sti();
@@ -53,7 +53,7 @@ void HariMain(void) {
             boxfill8(binfo->vram, binfo->scrnx, 30, 30, 190, 46, DARK_MIZU);
             draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
         } else if (mousefifo.count > 0) {
-            if (fifo8_get(&mousefifo, (unsigned char *)&i) < 0) {
+            if (fifo8_get(&mousefifo, &i) < 0) {
                 continue;
             }
             io_sti();
@@ -62,7 +62,14 @@ void HariMain(void) {
                 continue;
             }
 
-            sprintf(txt, "mouse = %x,%x,%x", mdec.buf[0], mdec.buf[1], mdec.buf[2] );
+            sprintf(txt, "[lcr %d %d]", mdec.x, mdec.y);
+            if (mdec.btn & 0x01) {
+                txt[1] = 'L';
+            } else if (mdec.btn & 0x02) {
+                txt[3] = 'R';
+            } else if (mdec.btn & 0x04) {
+                txt[2] = 'C';
+            }
             boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
             draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
         } else {
@@ -103,18 +110,32 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat) {
         return 0;
     }
     else if (mdec->phase == 1) {
-        mdec->buf[0] = dat;
-        mdec->phase = 2;
+        if ((dat & 0xc8) == 0x08) {
+            mdec->buf[0] = dat;
+            mdec->phase = 2;
+        }
         return 0;
     }
     else if (mdec->phase == 2) {
         mdec->buf[1] = dat;
         mdec->phase = 3;
-        return 0;
+        return 1;
     }
     else if (mdec->phase == 3) {
         mdec->buf[2] = dat;
         mdec->phase = 1;
+        mdec->btn = mdec->buf[0] & 0x07;
+        mdec->x = mdec->buf[1];
+        mdec->y = mdec->buf[2];
+
+        if (mdec->buf[0] & 0x10) {
+            mdec->x |= 0xffffff00;
+        }
+        if (mdec->buf[0] & 0x20) {
+            mdec->y |= 0xffffff00;
+        }
+        mdec->y *= -1;
+
         return 1;
     }
     return -1;

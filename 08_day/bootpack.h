@@ -55,6 +55,7 @@ void asm_inthandler2c(void);
 /* bootpack.c */
 struct MOUSE_DEC {
     unsigned char buf[3], phase;
+    int x, y, btn;
 };
 
 void wait_KBC_sendready(void);
@@ -144,4 +145,4 @@ struct FIFO8 {
 
 void fifo8_init(struct FIFO8 *fifo,  unsigned char *buf, int size);
 int fifo8_put(struct FIFO8 *fifo, unsigned char data);
-int fifo8_get(struct FIFO8 *fifo, unsigned char *data);
+int fifo8_get(struct FIFO8 *fifo, int *data);
