@@ -19,3 +19,28 @@ void init_pic(void) {
 
     return;
 }
+
+void inthandler21(int *esp) {
+    struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
+    init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+    boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
+    draw_string(binfo->vram, binfo->scrnx, 0, 0, "INT 21 (IRQ-1) : PS/2 keyboard", WHITE);
+    while (1) {
+        io_hlt();
+    }
+}
+
+void inthandler2c(int *esp) {
+    struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
+    init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+    boxfill8(binfo->vram, binfo->scrnx, 0, 0, 32 * 8 - 1, 15, BLACK);
+    draw_string(binfo->vram, binfo->scrnx, 0, 0, "INT C2 (IRQ-12) : PS/2 mouse", WHITE);
+    while (1) {
+        io_hlt();
+    }
+}
+
+void inthandler27(int *esp) {
+    io_out8(PIC0_OCW2, 0x67);
+    return;
+}

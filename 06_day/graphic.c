@@ -1,10 +1,11 @@
 #include "bootpack.h"
 
 
-void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color) {
+void draw_string(char *vram, int display_w, int x, int y, char *text, unsigned char color) {
+    extern char hankaku[4096];
     int i;
     for (i = 0; text[i]; i += 1) {
-        putfont8(vram, display_w, x + i * 10, y, font_data + text[i] * 16, color);
+        putfont8(vram, display_w, x + i * 8, y, hankaku + text[i] * 16, color);
     }
 }
 void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color) {

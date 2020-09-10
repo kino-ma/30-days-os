@@ -25,22 +25,28 @@
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
 #define ADR_BOOTINFO    0x0ff0
+#define AR_INTGATE32	0x008e
+
 
 /* asm */
 void io_hlt(void);
 void io_cli(void);
+void io_sti(void);
 void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
+void asm_inthandler21(void);
+void asm_inthandler27(void);
+void asm_inthandler2c(void);
 
 
 /* graphic.c */
 void init_screen(char *vram, int display_w, int display_h);
 
 void init_mouse_cursor8(char *mouse, char bc);
-void draw_string(char *vram, int display_w, int x, int y, char *text, char *font_data, unsigned char color);
+void draw_string(char *vram, int display_w, int x, int y, char *text, unsigned char color);
 void putfont8(char *vram, int display_w, int x, int y, char *font, unsigned char color);
 void putblock8_8(
     char *vram, int vxsize,
@@ -87,6 +93,9 @@ void sprintf(char *str, char *fmt, ...);
 
 /* int.c */
 void init_pic(void);
+void inthandler21(int *esp);
+void inthandler27(int *esp);
+void inthandler2c(int *esp);
 #define PIC0_ICW1		0x0020
 #define PIC0_OCW2		0x0020
 #define PIC0_IMR		0x0021
