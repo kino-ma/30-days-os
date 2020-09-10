@@ -15,7 +15,7 @@ int fifo8_put(struct FIFO8 *fifo, unsigned char data) {
         return -1;
     }
 
-    fifo->buf[fifo->cur + fifo->count % fifo->size] = data;
+    fifo->buf[(fifo->cur + fifo->count) % fifo->size] = data;
     fifo->count += 1;
 
     return 0;

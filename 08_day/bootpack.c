@@ -44,6 +44,7 @@ void HariMain(void) {
         io_cli();
         if (keyfifo.count > 0) {
             if (fifo8_get(&keyfifo, &i) < 0) {
+                boxfill8(binfo->vram, binfo->scrnx, 0, 0, binfo->scrnx, binfo->scrny, BLACK);
                 continue;
             }
             io_sti();
@@ -72,7 +73,30 @@ void HariMain(void) {
             }
             boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
             draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
-        } else {
+
+            boxfill8(binfo->vram, binfo->scrnx, mx, my, mx + 16, my + 16, DARK_MIZU);
+            mx += mdec.x;
+            my += mdec.y;
+
+            if (mx < 0) {
+                mx = 0;
+            }
+            if (my < 0) {
+                my = 0;
+            }
+            if (mx > binfo->scrnx - 16) {
+                mx = binfo->scrnx - 16;
+            }
+            if (my > binfo->scrny - 16) {
+                my = binfo->scrny - 16;
+            }
+
+            sprintf(txt, "(%d, %d)", mx, my);
+            boxfill8(binfo->vram, binfo->scrnx, 30, 70, 190, 86, DARK_MIZU);
+            draw_string(binfo->vram, binfo->scrnx, 30, 70, txt, WHITE);
+            putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
+        }
+        else {
             io_stihlt();
         }
     }
@@ -119,7 +143,7 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat) {
     else if (mdec->phase == 2) {
         mdec->buf[1] = dat;
         mdec->phase = 3;
-        return 1;
+        return 0;
     }
     else if (mdec->phase == 3) {
         mdec->buf[2] = dat;
