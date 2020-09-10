@@ -31,15 +31,16 @@ void inthandler21(int *esp) {
     return;
 }
 
+struct FIFO8 mousefifo;
+
 // マウスの割り込み
 void inthandler2c(int *esp) {
-    struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
-    init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-    boxfill8(binfo->vram, binfo->scrnx, 0, 16, 15, 31, DARK_MIZU);
-    draw_string(binfo->vram, binfo->scrnx, 0, 0, "INT C2 (IRQ-12) : PS/2 mouse", WHITE);
-    while (1) {
-        io_hlt();
-    }
+    unsigned char data;
+    io_out8(PIC1_OCW2, 0x64);
+    io_out8(PIC0_OCW2, 0x62);
+    data = io_in8(PORT_KEYDAT);
+    fifo8_put(&mousefifo, data);
+    return;
 }
 
 void inthandler27(int *esp) {

@@ -1,12 +1,13 @@
 #include "bootpack.h"
 
 extern struct FIFO8 keyfifo;
+extern struct FIFO8 mousefifo;
 
 void HariMain(void) {
     struct BOOTINFO *binfo;
     extern char hankaku[4096];
     char txt[30], mcursor[256];
-    unsigned char keybuf[32];
+    unsigned char keybuf[32], mousebuf[32];
     int mx, my, i;
 
     init_gdtidt();
@@ -16,6 +17,7 @@ void HariMain(void) {
     init_keyboard();
     enable_mouse();
     fifo8_init(&keyfifo, keybuf, 32);
+    fifo8_init(&mousefifo, mousebuf, 32);
 
     init_palette();
 
@@ -38,18 +40,27 @@ void HariMain(void) {
 
     while (1) {
         io_cli();
-        if (keyfifo.count <= 0) {
-            io_stihlt();
-        } else {
+        if (keyfifo.count > 0) {
             if (fifo8_get(&keyfifo, (unsigned char *)&i) < 0) {
                 continue;
             }
             io_sti();
 
-            sprintf(txt, "code = %x", i);
+            sprintf(txt, "code  = %x", i);
 
             boxfill8(binfo->vram, binfo->scrnx, 30, 30, 190, 46, DARK_MIZU);
             draw_string(binfo->vram, binfo->scrnx, 30, 30, txt, WHITE);
+        } else if (mousefifo.count > 0) {
+            if (fifo8_get(&mousefifo, (unsigned char *)&i) < 0) {
+                continue;
+            }
+            io_sti();
+
+            sprintf(txt, "mouse = %x", i);
+            boxfill8(binfo->vram, binfo->scrnx, 30, 50, 190, 66, DARK_MIZU);
+            draw_string(binfo->vram, binfo->scrnx, 30, 50, txt, WHITE);
+        } else {
+            io_stihlt();
         }
     }
 }
